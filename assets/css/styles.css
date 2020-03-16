@@ -1,0 +1,5 @@
+#container{
+    background-color: aqua;
+    width: 360px;
+    margin: 100px auto; /*Top bottom to be 0 and left and right to be auto */
+}
