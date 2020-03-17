@@ -1,3 +1,3 @@
-# Todo App
+# ToDo App
   ## Using (Vanilla JS + Local Storage)
-  ### Have all the functionalities of ubuntu todo app.
+  ### Have all the functionalities of Ubuntu Todo App.
