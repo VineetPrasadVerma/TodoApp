@@ -16,3 +16,7 @@ input[type=text]{
 .active-list{
     color: aqua;
 }
+
+.hide{
+    display: none;
+}
