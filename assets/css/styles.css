@@ -24,3 +24,9 @@ input[type=text]{
 .hide{
     display: none;
 }
+
+#listName{
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+}

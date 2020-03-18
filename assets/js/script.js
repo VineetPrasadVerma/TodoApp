@@ -20,9 +20,8 @@ const updateList = (id, value) => {
   // console.log(id, value)
   const list = lists.filter(list => list.id === String(id))[0]
   list.name = value
-  console.log(list, 'vinet')
+  // console.log(list, 'vinet')
   ls.setItem('todos', JSON.stringify(lists))
-  return true
   // console.log('vineet')
 }
 
@@ -38,21 +37,21 @@ const renderLists = lists => {
     const divElement = document.createElement('div')
     const span = document.createElement('span')
     span.textContent = list.name
-    divElement.id = list.id
     divElement.appendChild(span)
     const span1 = document.createElement('span')
     const span2 = document.createElement('span')
-    span1.innerHTML = '<i style="float:right; padding-right:5px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
+    span1.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
     span2.innerHTML = '<i style="float:right" class="fa fa-trash" aria-hidden="true"></i>'
     divElement.appendChild(span2)
     divElement.appendChild(span1)
 
     // console.log(span1.previousElementSibling)
-    span.setAttribute('onclick', 'renderSelectedListTasksOnClick(' + span.parentElement.id + ')')
+    span.setAttribute('onclick', 'renderSelectedListTasksOnClick(event)')
     span1.setAttribute('onclick', 'editSelectedListOnClick(event)')
     span2.setAttribute('onclick', 'deleteSelectedListOnClick(event)')
 
     divElement.id = list.id
+    divElement.style.padding = '5px'
     showListContainer.appendChild(divElement)
   })
 }
@@ -68,15 +67,17 @@ addListInput.addEventListener('keyup', function (event) {
   }
 })
 
-const renderSelectedListTasksOnClick = id => {
-  reset(document.getElementById('lists-container'))
-  selectedList = lists.filter(list => list.id === String(id))[0]
+const renderSelectedListTasksOnClick = event => {
+  // console.log(event.target.parentNode.parentNode.parentNode)
+  document.getElementById('container').removeChild(event.target.parentNode.parentNode.parentNode)
+  // reset(document.getElementById('lists-container'))
+  selectedList = lists.filter(list => list.id === String(event.target.parentNode.id))[0]
   renderTasks(selectedList)
 }
 
 const editSelectedListOnClick = (event) => {
   const parentDiv = event.target.parentNode.parentNode
-  console.log(parentDiv)
+  // console.log(parentDiv)
   parentDiv.childNodes[1].classList.add('hide')
   parentDiv.childNodes[2].classList.add('hide')
   const input = document.createElement('input')
@@ -88,13 +89,14 @@ const editSelectedListOnClick = (event) => {
     if (event.keyCode === 13) {
       // console.log(parentDiv.id)
       // console.log(this.value)
-      if (!updateList(parentDiv.id, this.value)) return
+      updateList(parentDiv.id, this.value)
       // console.log(event.target.parentNode.parentNode)
       // reset(event.target.parentNode.parentNode)
       // renderLists(lists)
       const span = document.createElement('span')
       span.textContent = this.value
       parentDiv.replaceChild(span, parentDiv.firstChild)
+      span.setAttribute('onclick', 'renderSelectedListTasksOnClick(event)')
       parentDiv.childNodes[1].classList.remove('hide')
       parentDiv.childNodes[2].classList.remove('hide')
     }
@@ -104,7 +106,7 @@ const editSelectedListOnClick = (event) => {
 const deleteSelectedListOnClick = (event) => {
   const parentDiv = event.target.parentNode.parentNode.parentNode
   const childDiv = event.target.parentNode.parentNode
-  console.log(childDiv.id)
+  // console.log(childDiv.id)
   deleteList(childDiv.id)
   parentDiv.removeChild(childDiv)
 }
@@ -132,12 +134,89 @@ const renderTasks = (selectedList) => {
   // console.log(selectedList)
   document.querySelector('#tasks-container').classList.remove('hide')
   selectedList.tasks.forEach(task => {
-    console.log('for each task')
+    // console.log('for each task')
     const divElement = document.createElement('div')
-    divElement.appendChild(document.createTextNode(task.name))
+    // divElement.appendChild(document.createTextNode(task.name))
+    // divElement.id = task.id
+    // showTaskContainer.appendChild(divElement)
+    const input = document.createElement('input')
+    input.type = 'checkbox'
+    input.checked = false
+    divElement.appendChild(input)
+    const span = document.createElement('span')
+    span.textContent = task.name
+    divElement.appendChild(span)
+
+    const span1 = document.createElement('span')
+    const span2 = document.createElement('span')
+    const span3 = document.createElement('span')
+    span1.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
+    span2.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-trash" aria-hidden="true"></i>'
+    span3.innerHTML = '<i style="float:right" class="fa fa-arrow-circle-down" aria-hidden="true"></i>'
+    divElement.appendChild(span3)
+    divElement.appendChild(span2)
+    divElement.appendChild(span1)
+
+    input.setAttribute('onclick', 'console.log("function to be written")')
+    span1.setAttribute('onclick', 'editSelectedTaskOnClick(event, ' + selectedList.id + ')')
+    span2.setAttribute('onclick', 'deleteSelectedTaskOnClick(event, ' + selectedList.id + ')')
+    span3.setAttribute('onclick', 'expandTask(event)')
+
     divElement.id = task.id
+    divElement.style.padding = '5px'
     showTaskContainer.appendChild(divElement)
   })
+}
+
+const updateTask = (listId, taskId, value) => {
+  // console.log(listId, taskId, value)
+  lists.filter(list => list.id === String(listId))[0].tasks.filter(task => task.id === taskId)[0].name = value
+  ls.setItem('todos', JSON.stringify(lists))
+}
+
+const deleteTask = (listId, taskId) => {
+  // console.log(listId, taskId, value)
+  const list = lists.filter(list => list.id === String(listId))[0]
+  const tasksList = list.tasks.filter(task => task.id !== taskId)
+  list.tasks = tasksList
+  ls.setItem('todos', JSON.stringify(lists))
+}
+
+const editSelectedTaskOnClick = (event, listId) => {
+  const parentDiv = event.target.parentNode.parentNode
+
+  parentDiv.childNodes[0].classList.add('hide')
+  parentDiv.childNodes[1].classList.add('hide')
+  parentDiv.childNodes[2].classList.add('hide')
+  parentDiv.childNodes[3].classList.add('hide')
+  parentDiv.childNodes[4].classList.add('hide')
+
+  const input = document.createElement('input')
+  input.type = 'text'
+  input.value = parentDiv.childNodes[1].textContent
+  parentDiv.replaceChild(input, parentDiv.childNodes[1])
+  input.focus()
+  input.addEventListener('keyup', function (event) {
+    if (event.keyCode === 13) {
+      updateTask(listId, parentDiv.id, this.value)
+      const span = document.createElement('span')
+      span.textContent = this.value
+      parentDiv.replaceChild(span, parentDiv.childNodes[1])
+      parentDiv.childNodes[0].classList.remove('hide')
+      parentDiv.childNodes[1].classList.remove('hide')
+      parentDiv.childNodes[2].classList.remove('hide')
+      parentDiv.childNodes[3].classList.remove('hide')
+      parentDiv.childNodes[4].classList.remove('hide')
+    }
+  })
+}
+
+const deleteSelectedTaskOnClick = (event, listId) => {
+  const parentDiv = event.target.parentNode.parentNode.parentNode
+  const childDiv = event.target.parentNode.parentNode
+  // console.log(childDiv.id)
+  deleteTask(listId, childDiv.id)
+  parentDiv.removeChild(childDiv)
 }
 
 addTaskInput.addEventListener('keyup', function (event) {
@@ -164,7 +243,7 @@ function createList (listName) {
 }
 
 function createTask (taskName) {
-  return { id: Date.now().toString(), name: taskName }
+  return { id: Date.now().toString(), name: taskName, scheduled: false, completed: false, priority: false, note: '' }
 }
 
 const load = () => renderLists(lists)
