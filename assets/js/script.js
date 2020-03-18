@@ -1,10 +1,10 @@
 const addListInput = document.querySelector('#add-list-input')
 const addTaskInput = document.querySelector('#add-task-input')
-const showListContainer = document.querySelector('#show-list-container')
+const showListContainer = document.querySelector('#show-lists-container')
 const showTaskContainer = document.querySelector('#show-tasks-container')
 
 const ls = window.localStorage
-const lists = ls.getItem('todos') ? JSON.parse(ls.getItem('todos')) : []
+let lists = ls.getItem('todos') ? JSON.parse(ls.getItem('todos')) : []
 let selectedList = []
 
 const addNewList = listName => {
@@ -14,10 +14,24 @@ const addNewList = listName => {
   ls.setItem('todos', JSON.stringify(lists))
 }
 
-// const updateList = (element, id) => {
-//   console.log(element, id)
-//   console.log('vineet')
-// }
+const updateList = (id, value) => {
+  // console.log(id, value)
+  if (!value) return
+  // console.log(id, value)
+  const list = lists.filter(list => list.id === String(id))[0]
+  list.name = value
+  console.log(list, 'vinet')
+  ls.setItem('todos', JSON.stringify(lists))
+  return true
+  // console.log('vineet')
+}
+
+const deleteList = id => {
+  const list = lists.filter(list => list.id !== String(id))
+  lists = list
+  // console.log(list)
+  ls.setItem('todos', JSON.stringify(lists))
+}
 
 const renderLists = lists => {
   lists.forEach(list => {
@@ -28,20 +42,18 @@ const renderLists = lists => {
     divElement.appendChild(span)
     const span1 = document.createElement('span')
     const span2 = document.createElement('span')
-    const editIcon = '<i style="float:right; padding-right:5px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
-    const trashIcon = '<i style="float:right" class="fa fa-trash" aria-hidden="true"></i>'
+    span1.innerHTML = '<i style="float:right; padding-right:5px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
+    span2.innerHTML = '<i style="float:right" class="fa fa-trash" aria-hidden="true"></i>'
     divElement.appendChild(span2)
     divElement.appendChild(span1)
-    span1.innerHTML = editIcon
-    span2.innerHTML = trashIcon
-    // document.getElementById('editIcon').setAttribute('onclick', console.log('edit'))
-    // document.getElementById('trashIcon').setAttribute('onclick', console.log('delete'))
-    span.setAttribute('onclick', 'selectedListRenderOnClick(' + span.parentElement.id + ')')
-    span1.setAttribute('onclick', 'selectedListEditOnClick(' + span.parentElement.id + ')')
-    span2.setAttribute('onclick', 'selectedListDeleteOnClick(' + span.parentElement.id + ')')
+
+    // console.log(span1.previousElementSibling)
+    span.setAttribute('onclick', 'renderSelectedListTasksOnClick(' + span.parentElement.id + ')')
+    span1.setAttribute('onclick', 'editSelectedListOnClick(event)')
+    span2.setAttribute('onclick', 'deleteSelectedListOnClick(event)')
+
     divElement.id = list.id
     showListContainer.appendChild(divElement)
-    // divElement.setAttribute('ondblclik', updateList)
   })
 }
 
@@ -56,19 +68,45 @@ addListInput.addEventListener('keyup', function (event) {
   }
 })
 
-const selectedListRenderOnClick = id => {
+const renderSelectedListTasksOnClick = id => {
   reset(document.getElementById('lists-container'))
   selectedList = lists.filter(list => list.id === String(id))[0]
   renderTasks(selectedList)
 }
 
-const selectedListEditOnClick = id => {
-  console.log(id)
-  // reset(document.getElementById('lists-container'))
-  selectedList = lists.filter(list => list.id === String(id))[0]
-  const value = selectedList.value
-  console.log(value)
-  // renderTasks(selectedList)
+const editSelectedListOnClick = (event) => {
+  const parentDiv = event.target.parentNode.parentNode
+  console.log(parentDiv)
+  parentDiv.childNodes[1].classList.add('hide')
+  parentDiv.childNodes[2].classList.add('hide')
+  const input = document.createElement('input')
+  input.type = 'text'
+  input.value = parentDiv.firstChild.textContent
+  parentDiv.replaceChild(input, parentDiv.firstChild)
+  input.focus()
+  input.addEventListener('keyup', function (event) {
+    if (event.keyCode === 13) {
+      // console.log(parentDiv.id)
+      // console.log(this.value)
+      if (!updateList(parentDiv.id, this.value)) return
+      // console.log(event.target.parentNode.parentNode)
+      // reset(event.target.parentNode.parentNode)
+      // renderLists(lists)
+      const span = document.createElement('span')
+      span.textContent = this.value
+      parentDiv.replaceChild(span, parentDiv.firstChild)
+      parentDiv.childNodes[1].classList.remove('hide')
+      parentDiv.childNodes[2].classList.remove('hide')
+    }
+  })
+}
+
+const deleteSelectedListOnClick = (event) => {
+  const parentDiv = event.target.parentNode.parentNode.parentNode
+  const childDiv = event.target.parentNode.parentNode
+  console.log(childDiv.id)
+  deleteList(childDiv.id)
+  parentDiv.removeChild(childDiv)
 }
 // showListContainer.addEventListener('click', function (event) {
 //   event.target.classList.toggle('active-list')
