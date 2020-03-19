@@ -57,6 +57,7 @@ const renderLists = lists => {
 }
 
 addListInput.addEventListener('keyup', function (event) {
+  searchList(event)
   if (event.keyCode === 13) {
     event.preventDefault()
     addNewList(this.value)
@@ -66,6 +67,12 @@ addListInput.addEventListener('keyup', function (event) {
     renderLists(lists)
   }
 })
+
+const searchList = event => {
+  const searchedList = lists.filter(list => list.name.toLowerCase().startsWith(event.target.value.toLowerCase()))
+  reset(addListInput.nextElementSibling)
+  renderLists(searchedList)
+}
 
 const renderSelectedListTasksOnClick = event => {
   // console.log(event.target.parentNode.parentNode.parentNode)
@@ -133,6 +140,7 @@ const addNewTask = taskName => {
 const renderTasks = (selectedList) => {
   // console.log(selectedList)
   document.querySelector('#tasks-container').classList.remove('hide')
+  document.getElementById('listName').textContent = selectedList.name
   selectedList.tasks.forEach(task => {
     // console.log('for each task')
     const divElement = document.createElement('div')
@@ -160,15 +168,16 @@ const renderTasks = (selectedList) => {
     input.setAttribute('onclick', 'updateTask(' + selectedList.id + ',event.target.parentNode.id' + ', {completed:' + !input.checked + '})')
     span1.setAttribute('onclick', 'editSelectedTaskOnClick(event, ' + selectedList.id + ')')
     span2.setAttribute('onclick', 'deleteSelectedTaskOnClick(event, ' + selectedList.id + ')')
-    span3.setAttribute('onclick', 'expandTask(event, ' + selectedList.id + ')')
-
+    // span3.setAttribute('onclick', 'expandTask(event, ' + selectedList.id + ',"task")')
+    span3.onclick = event => { expandTask(event, selectedList.id, task) }
     divElement.id = task.id
     divElement.style.padding = '5px'
     showTaskContainer.appendChild(divElement)
   })
 }
 
-const expandTask = (event, listId) => {
+const expandTask = (event, listId, task) => {
+  // console.log(task)
   const parentDiv = event.target.parentNode.parentNode
 
   if (parentDiv.querySelector('#task-details')) {
@@ -190,26 +199,39 @@ const expandTask = (event, listId) => {
 
   const textArea = document.createElement('textarea')
   textArea.id = 'textArea'
+  textArea.textContent = task.note
 
   const input = document.createElement('input')
   input.id = 'scheduling'
   input.type = 'date'
+  input.value = task.scheduled
 
   const selectList = document.createElement('select')
   selectList.id = 'priority'
   const priorityArr = ['None', 'Low', 'Medium', 'High']
+
   for (let i = 0; i < priorityArr.length; i++) {
     const option = document.createElement('option')
     option.value = i
     option.text = priorityArr[i]
     selectList.appendChild(option)
   }
+  selectList.value = task.priority
 
   taskDetailsContainer.append(span)
   taskDetailsContainer.appendChild(textArea)
   taskDetailsContainer.appendChild(input)
   taskDetailsContainer.appendChild(selectList)
 
+  textArea.onchange = (event) => { updateTask(listId, parentDiv.id, { note: event.target.value }) }
+  input.onchange = (event) => { updateTask(listId, parentDiv.id, { scheduled: event.target.value }) }
+  selectList.onchange = (event) => { updateTask(listId, parentDiv.id, { priority: event.target.value }) }
+  // textArea.setAttribute('onchange', 'updateTask(' + listId + ',' + 'event.target.parentNode.parentNode.id' + ',{ note:' + event.currentTarget.value + '})')
+  // textArea.oninput = function tamp (event) {
+  //   console.log(event)
+  //   updateTask(listId, parentDiv.id, { note: event.target.value })
+  // }
+  // updateTask(listId, parentDiv.id, { note: event.target.value })
   // const option = document.createElement('option')
 
   // taskDetailsContainer.classList.toggle('hide')
@@ -217,10 +239,29 @@ const expandTask = (event, listId) => {
 
 const updateTask = (listId, taskId, taskObj) => {
   // console.log(listId, taskId, taskObj)
+  // console.log(taskObj)
   const task = lists.filter(list => list.id === String(listId))[0].tasks.filter(task => task.id === taskId)[0]
   Object.assign(task, taskObj)
   // console.log(task)
   ls.setItem('todos', JSON.stringify(lists))
+  if (Object.keys(taskObj)[0] === 'scheduled' || Object.keys(taskObj)[0] === 'priority') {
+    updateOrderofTasks(listId)
+  }
+}
+
+const updateOrderofTasks = listId => {
+  // console.log(listId)
+  const taskList = lists.filter(list => list.id === String(listId))[0].tasks
+  // console.log(taskList)
+  taskList.sort((a, b) => {
+    if (a.scheduled > b.scheduled) return 1
+    if (b.scheduled > a.scheduled) return -1
+    return 0
+  })
+  taskList.sort((a, b) => b.priority - a.priority)
+  console.log(lists)
+  reset(addTaskInput.nextElementSibling)
+  renderTasks(lists.filter(list => list.id === String(listId))[0])
 }
 
 const deleteTask = (listId, taskId) => {
@@ -278,7 +319,6 @@ const deleteSelectedTaskOnClick = (event, listId) => {
 
 addTaskInput.addEventListener('keyup', function (event) {
   if (event.keyCode === 13) {
-    event.preventDefault()
     // console.log(event.target)
     addNewTask(this.value)
     this.value = ''
@@ -300,7 +340,7 @@ function createList (listName) {
 }
 
 function createTask (taskName) {
-  return { id: Date.now().toString(), name: taskName, scheduled: false, completed: false, priority: false, note: '' }
+  return { id: Date.now().toString(), name: taskName, scheduled: '32-32-3232', completed: false, priority: 0, note: '' }
 }
 
 const load = () => renderLists(lists)
