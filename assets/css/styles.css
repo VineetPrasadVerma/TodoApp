@@ -30,3 +30,37 @@ input[type=text]{
     margin-bottom: 25px;
     font-size: 24px;
 }
+
+#label{
+    grid-area: nlabel;
+}
+
+#textArea{
+    grid-area: notes; 
+}
+
+#scheduling{
+    grid-area: scheduling;
+    margin-top: 10px;
+}
+
+#priority{
+    grid-area: priority;
+}
+
+#task-details{
+    display: grid;
+    height: 150px;
+    margin-top: 10px;
+    border: 1px solid gray;
+    grid-column-gap: 5px;
+    padding: 5px;
+    grid-template-areas: 
+    "nlabel nlabel . ."
+    "notes notes . ."
+    "notes notes priority priority"
+    "notes notes scheduling scheduling"
+    "notes notes . ."
+    "notes notes . ."
+  
+}

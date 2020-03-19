@@ -141,7 +141,7 @@ const renderTasks = (selectedList) => {
     // showTaskContainer.appendChild(divElement)
     const input = document.createElement('input')
     input.type = 'checkbox'
-    input.checked = false
+    input.checked = task.completed
     divElement.appendChild(input)
     const span = document.createElement('span')
     span.textContent = task.name
@@ -157,10 +157,10 @@ const renderTasks = (selectedList) => {
     divElement.appendChild(span2)
     divElement.appendChild(span1)
 
-    input.setAttribute('onclick', 'console.log("function to be written")')
+    input.setAttribute('onclick', 'updateTask(' + selectedList.id + ',event.target.parentNode.id' + ', {completed:' + !input.checked + '})')
     span1.setAttribute('onclick', 'editSelectedTaskOnClick(event, ' + selectedList.id + ')')
     span2.setAttribute('onclick', 'deleteSelectedTaskOnClick(event, ' + selectedList.id + ')')
-    span3.setAttribute('onclick', 'expandTask(event)')
+    span3.setAttribute('onclick', 'expandTask(event, ' + selectedList.id + ')')
 
     divElement.id = task.id
     divElement.style.padding = '5px'
@@ -168,9 +168,58 @@ const renderTasks = (selectedList) => {
   })
 }
 
-const updateTask = (listId, taskId, value) => {
-  // console.log(listId, taskId, value)
-  lists.filter(list => list.id === String(listId))[0].tasks.filter(task => task.id === taskId)[0].name = value
+const expandTask = (event, listId) => {
+  const parentDiv = event.target.parentNode.parentNode
+
+  if (parentDiv.querySelector('#task-details')) {
+    parentDiv.removeChild(parentDiv.lastChild)
+    return
+  }
+
+  const taskDetailsContainer = document.createElement('div')
+  taskDetailsContainer.id = 'task-details'
+  taskDetailsContainer.name = 'taskDetails'
+  // const taskDetailContainer = document.getElementById('task-details')
+  // reset(taskDetailContainer)
+  const span = document.createElement('span')
+  span.id = 'label'
+  span.textContent = 'Notes:'
+  // console.log(event.target.parentNode)
+  parentDiv.appendChild(taskDetailsContainer)
+  taskDetailsContainer.classList.toggle('hide')
+
+  const textArea = document.createElement('textarea')
+  textArea.id = 'textArea'
+
+  const input = document.createElement('input')
+  input.id = 'scheduling'
+  input.type = 'date'
+
+  const selectList = document.createElement('select')
+  selectList.id = 'priority'
+  const priorityArr = ['None', 'Low', 'Medium', 'High']
+  for (let i = 0; i < priorityArr.length; i++) {
+    const option = document.createElement('option')
+    option.value = i
+    option.text = priorityArr[i]
+    selectList.appendChild(option)
+  }
+
+  taskDetailsContainer.append(span)
+  taskDetailsContainer.appendChild(textArea)
+  taskDetailsContainer.appendChild(input)
+  taskDetailsContainer.appendChild(selectList)
+
+  // const option = document.createElement('option')
+
+  // taskDetailsContainer.classList.toggle('hide')
+}
+
+const updateTask = (listId, taskId, taskObj) => {
+  // console.log(listId, taskId, taskObj)
+  const task = lists.filter(list => list.id === String(listId))[0].tasks.filter(task => task.id === taskId)[0]
+  Object.assign(task, taskObj)
+  // console.log(task)
   ls.setItem('todos', JSON.stringify(lists))
 }
 
@@ -185,11 +234,15 @@ const deleteTask = (listId, taskId) => {
 const editSelectedTaskOnClick = (event, listId) => {
   const parentDiv = event.target.parentNode.parentNode
 
-  parentDiv.childNodes[0].classList.add('hide')
-  parentDiv.childNodes[1].classList.add('hide')
-  parentDiv.childNodes[2].classList.add('hide')
-  parentDiv.childNodes[3].classList.add('hide')
-  parentDiv.childNodes[4].classList.add('hide')
+  for (let i = 0; i < 5; i++) {
+    parentDiv.childNodes[i].classList.add('hide')
+  }
+  // parentDiv.childNodes[0].classList.add('hide')
+  // parentDiv.childNodes[1].classList.add('hide')
+  // parentDiv.childNodes[2].classList.add('hide')
+  // parentDiv.childNodes[3].classList.add('hide')
+  // parentDiv.childNodes[4].classList.add('hide')
+  // parentDiv.classList.add('hide')
 
   const input = document.createElement('input')
   input.type = 'text'
@@ -198,15 +251,19 @@ const editSelectedTaskOnClick = (event, listId) => {
   input.focus()
   input.addEventListener('keyup', function (event) {
     if (event.keyCode === 13) {
-      updateTask(listId, parentDiv.id, this.value)
+      updateTask(listId, parentDiv.id, { name: this.value })
       const span = document.createElement('span')
       span.textContent = this.value
       parentDiv.replaceChild(span, parentDiv.childNodes[1])
-      parentDiv.childNodes[0].classList.remove('hide')
-      parentDiv.childNodes[1].classList.remove('hide')
-      parentDiv.childNodes[2].classList.remove('hide')
-      parentDiv.childNodes[3].classList.remove('hide')
-      parentDiv.childNodes[4].classList.remove('hide')
+      // parentDiv.childNodes[0].classList.remove('hide')
+      // parentDiv.childNodes[1].classList.remove('hide')
+      // parentDiv.childNodes[2].classList.remove('hide')
+      // parentDiv.childNodes[3].classList.remove('hide')
+      // parentDiv.childNodes[4].classList.remove('hide')
+      // parentDiv.classList.remove('hide')
+      for (let i = 0; i < 5; i++) {
+        parentDiv.childNodes[i].classList.remove('hide')
+      }
     }
   })
 }
