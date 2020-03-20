@@ -178,9 +178,14 @@ const renderTasks = (selectedList) => {
     span1.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
     span2.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-trash" aria-hidden="true"></i>'
     span3.innerHTML = '<i style="float:right;" class="fa fa-arrow-circle-down" aria-hidden="true"></i>'
+
     divElement.appendChild(span3)
     divElement.appendChild(span2)
     divElement.appendChild(span1)
+
+    if (task.priority === '3') span3.style.color = 'red'
+    if (task.priority === '2') span3.style.color = 'orange'
+    if (task.priority === '1') span3.style.color = 'green'
 
     if (input.checked) {
       span.style.textDecoration = 'line-through'
@@ -258,14 +263,7 @@ const expandTask = (event, listId, task) => {
   textArea.onchange = (event) => updateTask(listId, parentDiv.id, { note: event.target.value })
   input.onchange = (event) => updateTask(listId, parentDiv.id, { scheduled: event.target.value })
 
-  selectList.onchange = (event) => {
-    console.log(event.currentTarget.parentNode.parentNode)
-    if (event.target.value === '3') {
-      console.log(event.target.parentNode.parentNode.children[2].firstChild)
-      event.target.parentNode.parentNode.children[2].firstChild.classList.add('red')
-    }
-    updateTask(listId, parentDiv.id, { priority: event.target.value })
-  }
+  selectList.onchange = (event) => updateTask(listId, parentDiv.id, { priority: event.target.value })
   // textArea.setAttribute('onchange', 'updateTask(' + listId + ',' + 'event.target.parentNode.parentNode.id' + ',{ note:' + event.currentTarget.value + '})')
   // textArea.oninput = function tamp (event) {
   //   console.log(event)
