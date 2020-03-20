@@ -64,3 +64,15 @@ input[type=text]{
     "notes notes . ."
   
 }
+
+/* #back-button{
+    font-size: 20px;
+} */
+
+#todo-heading{
+    text-align: center;
+}
+
+.red{
+    color: red;
+}

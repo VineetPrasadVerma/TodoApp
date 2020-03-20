@@ -76,8 +76,9 @@ const searchList = event => {
 
 const renderSelectedListTasksOnClick = event => {
   // console.log(event.target.parentNode.parentNode.parentNode)
-  document.getElementById('container').removeChild(event.target.parentNode.parentNode.parentNode)
+  // document.getElementById('container').removeChild(event.target.parentNode.parentNode.parentNode)
   // reset(document.getElementById('lists-container'))
+  event.target.parentNode.parentNode.parentNode.classList.add('hide')
   selectedList = lists.filter(list => list.id === String(event.target.parentNode.id))[0]
   renderTasks(selectedList)
 }
@@ -139,8 +140,25 @@ const addNewTask = taskName => {
 
 const renderTasks = (selectedList) => {
   // console.log(selectedList)
+  document.getElementById('todo-heading').classList.add('hide')
   document.querySelector('#tasks-container').classList.remove('hide')
-  document.getElementById('listName').textContent = selectedList.name
+  document.getElementById('listName').innerHTML = '<span style="float:left" id="back-button"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>' + selectedList.name
+  // console.log(document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild)
+  // document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild.onclick = (event) => {
+  //   reset(document.getElementById('tasks-container'))
+  //   console.log('v')
+  //   renderLists(lists)
+  // }
+  document.getElementById('back-button').onclick = (event) => {
+    document.querySelector('#tasks-container').classList.add('hide')
+    document.getElementById('todo-heading').classList.remove('hide')
+    reset(addListInput.nextElementSibling)
+    reset(addTaskInput.nextElementSibling)
+    // console.log(document.getElementById('container').children[1])
+    document.getElementById('container').children[1].classList.remove('hide')
+    renderLists(lists)
+  }
+
   selectedList.tasks.forEach(task => {
     // console.log('for each task')
     const divElement = document.createElement('div')
@@ -154,18 +172,32 @@ const renderTasks = (selectedList) => {
     const span = document.createElement('span')
     span.textContent = task.name
     divElement.appendChild(span)
-
     const span1 = document.createElement('span')
     const span2 = document.createElement('span')
     const span3 = document.createElement('span')
     span1.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
     span2.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-trash" aria-hidden="true"></i>'
-    span3.innerHTML = '<i style="float:right" class="fa fa-arrow-circle-down" aria-hidden="true"></i>'
+    span3.innerHTML = '<i style="float:right;" class="fa fa-arrow-circle-down" aria-hidden="true"></i>'
     divElement.appendChild(span3)
     divElement.appendChild(span2)
     divElement.appendChild(span1)
 
-    input.setAttribute('onclick', 'updateTask(' + selectedList.id + ',event.target.parentNode.id' + ', {completed:' + !input.checked + '})')
+    if (input.checked) {
+      span.style.textDecoration = 'line-through'
+      span.style.color = 'grey'
+    }
+
+    input.onclick = (event) => {
+      if (input.checked) {
+        span.style.color = 'grey'
+        span.style.textDecoration = 'line-through'
+      } else {
+        span.style.textDecoration = 'none'
+        // span.style.color = 'none'
+      }
+      updateTask(selectedList.id, event.target.parentNode.id, { completed: input.checked })
+    }
+    //  input.setAttribute('onclick', 'updateTask(' + selectedList.id + ',event.target.parentNode.id' + ', {completed:' + !input.checked + '})')
     span1.setAttribute('onclick', 'editSelectedTaskOnClick(event, ' + selectedList.id + ')')
     span2.setAttribute('onclick', 'deleteSelectedTaskOnClick(event, ' + selectedList.id + ')')
     // span3.setAttribute('onclick', 'expandTask(event, ' + selectedList.id + ',"task")')
@@ -223,9 +255,17 @@ const expandTask = (event, listId, task) => {
   taskDetailsContainer.appendChild(input)
   taskDetailsContainer.appendChild(selectList)
 
-  textArea.onchange = (event) => { updateTask(listId, parentDiv.id, { note: event.target.value }) }
-  input.onchange = (event) => { updateTask(listId, parentDiv.id, { scheduled: event.target.value }) }
-  selectList.onchange = (event) => { updateTask(listId, parentDiv.id, { priority: event.target.value }) }
+  textArea.onchange = (event) => updateTask(listId, parentDiv.id, { note: event.target.value })
+  input.onchange = (event) => updateTask(listId, parentDiv.id, { scheduled: event.target.value })
+
+  selectList.onchange = (event) => {
+    console.log(event.currentTarget.parentNode.parentNode)
+    if (event.target.value === '3') {
+      console.log(event.target.parentNode.parentNode.children[2].firstChild)
+      event.target.parentNode.parentNode.children[2].firstChild.classList.add('red')
+    }
+    updateTask(listId, parentDiv.id, { priority: event.target.value })
+  }
   // textArea.setAttribute('onchange', 'updateTask(' + listId + ',' + 'event.target.parentNode.parentNode.id' + ',{ note:' + event.currentTarget.value + '})')
   // textArea.oninput = function tamp (event) {
   //   console.log(event)
@@ -244,12 +284,12 @@ const updateTask = (listId, taskId, taskObj) => {
   Object.assign(task, taskObj)
   // console.log(task)
   ls.setItem('todos', JSON.stringify(lists))
-  if (Object.keys(taskObj)[0] === 'scheduled' || Object.keys(taskObj)[0] === 'priority') {
-    updateOrderofTasks(listId)
+  if (Object.keys(taskObj)[0] === 'scheduled' || Object.keys(taskObj)[0] === 'priority' || Object.keys(taskObj)[0] === 'completed') {
+    updateOrderOfTasks(listId)
   }
 }
 
-const updateOrderofTasks = listId => {
+const updateOrderOfTasks = listId => {
   // console.log(listId)
   const taskList = lists.filter(list => list.id === String(listId))[0].tasks
   // console.log(taskList)
@@ -258,8 +298,15 @@ const updateOrderofTasks = listId => {
     if (b.scheduled > a.scheduled) return -1
     return 0
   })
+
   taskList.sort((a, b) => b.priority - a.priority)
-  console.log(lists)
+  // console.log(lists)
+  taskList.sort((a, b) => {
+    if (String(a.completed) > String(b.completed)) return 1
+    if (String(b.completed) > String(a.completed)) return -1
+    return 0
+  })
+
   reset(addTaskInput.nextElementSibling)
   renderTasks(lists.filter(list => list.id === String(listId))[0])
 }
@@ -288,14 +335,18 @@ const editSelectedTaskOnClick = (event, listId) => {
   const input = document.createElement('input')
   input.type = 'text'
   input.value = parentDiv.childNodes[1].textContent
-  parentDiv.replaceChild(input, parentDiv.childNodes[1])
+  parentDiv.childNodes[1].classList.add('hide')
+  // parentDiv.replaceChild(input, parentDiv.childNodes[1])
+  parentDiv.appendChild(input)
   input.focus()
   input.addEventListener('keyup', function (event) {
     if (event.keyCode === 13) {
       updateTask(listId, parentDiv.id, { name: this.value })
-      const span = document.createElement('span')
-      span.textContent = this.value
-      parentDiv.replaceChild(span, parentDiv.childNodes[1])
+      // const span = document.createElement('span')
+      // span.textContent = this.value
+      // parentDiv.replaceChild(span, parentDiv.childNodes[1])
+      parentDiv.removeChild(input)
+      parentDiv.childNodes[1].textContent = this.value
       // parentDiv.childNodes[0].classList.remove('hide')
       // parentDiv.childNodes[1].classList.remove('hide')
       // parentDiv.childNodes[2].classList.remove('hide')
@@ -340,8 +391,11 @@ function createList (listName) {
 }
 
 function createTask (taskName) {
-  return { id: Date.now().toString(), name: taskName, scheduled: '32-32-3232', completed: false, priority: 0, note: '' }
+  return { id: Date.now().toString(), name: taskName, scheduled: '9999-99-99', completed: false, priority: 0, note: '' }
 }
 
-const load = () => renderLists(lists)
+const load = () => {
+  document.getElementById('lists-container').classList.remove('hide')
+  renderLists(lists)
+}
 load()
