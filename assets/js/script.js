@@ -143,8 +143,8 @@ const renderTasks = (selectedList) => {
   // console.log(selectedList)
   document.getElementById('todo-heading').classList.add('hide')
   document.querySelector('#tasks-container').classList.remove('hide')
-  document.getElementById('listName').innerHTML = '<span style="float:left" id="back-button"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>' +
-  selectedList.name + '<i style="float:right"; id="clear-task-button" class="fa fa-times" aria-hidden="true"></i>'
+  document.getElementById('listName').innerHTML = '<span style="float:left;" id="back-button"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>' +
+  selectedList.name + '<i style="float:right; color:gray; pointer-Events:none;" id="clear-task-button" class="fa fa-times" aria-hidden="true"></i>'
   // console.log(document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild)
   // document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild.onclick = (event) => {
   //   reset(document.getElementById('tasks-container'))
@@ -199,6 +199,8 @@ const renderTasks = (selectedList) => {
       //   span`${i}`.style.pointerEvents = 'none'
       //   span`${i}`.style.color = 'grey'
       // }
+      document.getElementById('clear-task-button').style.pointerEvents = ''
+      document.getElementById('clear-task-button').style.color = ''
       span1.style.pointerEvents = 'none'
       span2.style.pointerEvents = 'none'
       span3.style.pointerEvents = 'none'
@@ -230,13 +232,18 @@ const renderTasks = (selectedList) => {
 }
 
 const clearCompletedTask = (event, selectedList) => {
-  let tasks = selectedList.tasks
-  tasks = tasks.filter(task => !task.completed)
-  console.log('v')
+  // let tasks = selectedList.tasks
+  selectedList.tasks = selectedList.tasks.filter(task => !task.completed)
+  // tasks = updatedTasksList
+  // console.log(tasks)
+  // console.log('v')
   // event.target.parentNode.parentNode.parentNode.classList.add('hide')
   // reset(addTaskInput.nextElementSibling)
   // document.querySelector('#tasks-container').classList.add('hide')
-  reset(addTaskInput.nextElementSibling)
+  // reset(addTaskInput.nextElementSibling)
+  // console.log(selectedList)
+  // console.log(lists)
+  reset(event.target.parentNode.nextElementSibling.nextElementSibling)
   renderTasks(selectedList)
 }
 const expandTask = (event, listId, task) => {
@@ -306,7 +313,7 @@ const updateTask = (listId, taskId, taskObj) => {
   // console.log(taskObj)
   const task = lists.filter(list => list.id === String(listId))[0].tasks.filter(task => task.id === taskId)[0]
   Object.assign(task, taskObj)
-  // console.log(task)
+  // console.log(lists)
   ls.setItem('todos', JSON.stringify(lists))
   if (Object.keys(taskObj)[0] === 'scheduled' || Object.keys(taskObj)[0] === 'priority' || Object.keys(taskObj)[0] === 'completed') {
     updateOrderOfTasks(listId)
@@ -316,7 +323,7 @@ const updateTask = (listId, taskId, taskObj) => {
 const updateOrderOfTasks = listId => {
   console.log(listId)
   const taskList = lists.filter(list => list.id === String(listId))[0].tasks
-  // console.log(taskList)
+  console.log(taskList)
   taskList.sort((a, b) => {
     if (a.scheduled > b.scheduled) return 1
     if (b.scheduled > a.scheduled) return -1
@@ -332,6 +339,7 @@ const updateOrderOfTasks = listId => {
   })
 
   reset(addTaskInput.nextElementSibling)
+  console.log(lists.filter(list => list.id === String(listId))[0])
   renderTasks(lists.filter(list => list.id === String(listId))[0])
 }
 
