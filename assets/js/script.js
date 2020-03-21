@@ -37,6 +37,7 @@ const renderLists = lists => {
     const divElement = document.createElement('div')
     const span = document.createElement('span')
     span.textContent = list.name
+    span.id = 'list-item'
     divElement.appendChild(span)
     const span1 = document.createElement('span')
     const span2 = document.createElement('span')
@@ -142,7 +143,8 @@ const renderTasks = (selectedList) => {
   // console.log(selectedList)
   document.getElementById('todo-heading').classList.add('hide')
   document.querySelector('#tasks-container').classList.remove('hide')
-  document.getElementById('listName').innerHTML = '<span style="float:left" id="back-button"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>' + selectedList.name
+  document.getElementById('listName').innerHTML = '<span style="float:left" id="back-button"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>' +
+  selectedList.name + '<i style="float:right"; id="clear-task-button" class="fa fa-times" aria-hidden="true"></i>'
   // console.log(document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild)
   // document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild.onclick = (event) => {
   //   reset(document.getElementById('tasks-container'))
@@ -159,6 +161,9 @@ const renderTasks = (selectedList) => {
     renderLists(lists)
   }
 
+  // console.log(document.getElementsByClassName('fa fa-times'))
+  document.getElementById('clear-task-button').onclick = event => clearCompletedTask(event, selectedList)
+
   selectedList.tasks.forEach(task => {
     // console.log('for each task')
     const divElement = document.createElement('div')
@@ -171,6 +176,7 @@ const renderTasks = (selectedList) => {
     divElement.appendChild(input)
     const span = document.createElement('span')
     span.textContent = task.name
+    span.id = 'text-item'
     divElement.appendChild(span)
     const span1 = document.createElement('span')
     const span2 = document.createElement('span')
@@ -189,6 +195,16 @@ const renderTasks = (selectedList) => {
 
     if (input.checked) {
       span.style.textDecoration = 'line-through'
+      // for (let i = 1; i < 4; i++) {
+      //   span`${i}`.style.pointerEvents = 'none'
+      //   span`${i}`.style.color = 'grey'
+      // }
+      span1.style.pointerEvents = 'none'
+      span2.style.pointerEvents = 'none'
+      span3.style.pointerEvents = 'none'
+      span1.style.color = 'grey'
+      span2.style.color = 'grey'
+      span3.style.color = 'grey'
       span.style.color = 'grey'
     }
 
@@ -213,6 +229,16 @@ const renderTasks = (selectedList) => {
   })
 }
 
+const clearCompletedTask = (event, selectedList) => {
+  let tasks = selectedList.tasks
+  tasks = tasks.filter(task => !task.completed)
+  console.log('v')
+  // event.target.parentNode.parentNode.parentNode.classList.add('hide')
+  // reset(addTaskInput.nextElementSibling)
+  // document.querySelector('#tasks-container').classList.add('hide')
+  reset(addTaskInput.nextElementSibling)
+  renderTasks(selectedList)
+}
 const expandTask = (event, listId, task) => {
   // console.log(task)
   const parentDiv = event.target.parentNode.parentNode
@@ -288,7 +314,7 @@ const updateTask = (listId, taskId, taskObj) => {
 }
 
 const updateOrderOfTasks = listId => {
-  // console.log(listId)
+  console.log(listId)
   const taskList = lists.filter(list => list.id === String(listId))[0].tasks
   // console.log(taskList)
   taskList.sort((a, b) => {
@@ -373,7 +399,8 @@ addTaskInput.addEventListener('keyup', function (event) {
     this.value = ''
     // console.log(addListInput.nextSibling.innerHTML)
     reset(addTaskInput.nextElementSibling)
-    renderTasks(selectedList)
+    updateOrderOfTasks(selectedList.id)
+    // renderTasks(selectedList)
   }
 })
 

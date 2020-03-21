@@ -73,6 +73,10 @@ input[type=text]{
     text-align: center;
 }
 
-.red{
-    color: red;
+#list-item:hover {
+    cursor: pointer;
 }
+
+/* #text-item:hover {
+    cursor: pointer;
+} */
