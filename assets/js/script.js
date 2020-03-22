@@ -3,33 +3,30 @@ const addTaskInput = document.querySelector('#add-task-input')
 const showListContainer = document.querySelector('#show-lists-container')
 const showTaskContainer = document.querySelector('#show-tasks-container')
 
-const ls = window.localStorage
-let lists = ls.getItem('todos') ? JSON.parse(ls.getItem('todos')) : []
+const localStorage = window.localStorage
+let lists = localStorage.getItem('todos') ? JSON.parse(localStorage.getItem('todos')) : []
 let selectedList = []
 
 const addNewList = listName => {
   if (!listName) return false
   const newList = createList(listName)
   lists.push(newList)
-  ls.setItem('todos', JSON.stringify(lists))
+  localStorage.setItem('todos', JSON.stringify(lists))
   return true
 }
 
 const updateList = (id, value) => {
-  if (!value) return
-  // console.log(id, value)
+  if (!value) return false
   const list = lists.filter(list => list.id === String(id))[0]
   list.name = value
-  // console.log(list, 'vinet')
-  ls.setItem('todos', JSON.stringify(lists))
-  // console.log('vineet')
+  localStorage.setItem('todos', JSON.stringify(lists))
+  return true
 }
 
 const deleteList = id => {
-  const list = lists.filter(list => list.id !== String(id))
-  lists = list
-  // console.log(list)
-  ls.setItem('todos', JSON.stringify(lists))
+  const filteredList = lists.filter(list => list.id !== String(id))
+  lists = filteredList
+  localStorage.setItem('todos', JSON.stringify(lists))
 }
 
 const renderLists = lists => {
@@ -39,6 +36,7 @@ const renderLists = lists => {
     span.textContent = list.name
     span.id = 'list-item'
     divElement.appendChild(span)
+
     const span1 = document.createElement('span')
     const span2 = document.createElement('span')
     span1.innerHTML = '<i style="float:right; padding-right:10px" class="fa fa-pencil-square-o" aria-hidden="true"></i>'
@@ -59,6 +57,7 @@ const renderLists = lists => {
 
 addListInput.addEventListener('keyup', function (event) {
   searchList(event)
+
   if (event.keyCode === 13) {
     event.preventDefault()
     // console.log(event.target.value)
@@ -66,11 +65,13 @@ addListInput.addEventListener('keyup', function (event) {
       addListInput.placeholder = ' Can\'t add empty list'
       return
     }
+
     this.value = ''
     addListInput.placeholder = ' Search | Add Lists'
     // console.log(addListInput.nextSibling.innerHTML)
     reset(addListInput.nextElementSibling)
     renderLists(lists)
+    // console.log(addListInput.nextElementSibling.children[addListInput.nextElementSibling.children.length - 2])
   }
 })
 
@@ -103,7 +104,10 @@ const editSelectedListOnClick = (event) => {
     if (event.keyCode === 13) {
       // console.log(parentDiv.id)
       // console.log(this.value)
-      updateList(parentDiv.id, this.value)
+      if (!updateList(parentDiv.id, this.value)) {
+        input.placeholder = 'Can\'t set empty name'
+        return
+      }
       // console.log(event.target.parentNode.parentNode)
       // reset(event.target.parentNode.parentNode)
       // renderLists(lists)
@@ -124,6 +128,7 @@ const deleteSelectedListOnClick = (event) => {
   deleteList(childDiv.id)
   parentDiv.removeChild(childDiv)
 }
+
 // showListContainer.addEventListener('click', function (event) {
 //   event.target.classList.toggle('active-list')
 //   // console.log(event.target.id)
@@ -137,26 +142,25 @@ const deleteSelectedListOnClick = (event) => {
 
 const addNewTask = taskName => {
   if (!taskName) return false
-  // console.log(taskList)
   const newTask = createTask(taskName)
   selectedList.tasks.push(newTask)
-  // console.log(lists)
-  ls.setItem('todos', JSON.stringify(lists))
+  localStorage.setItem('todos', JSON.stringify(lists))
   return true
 }
 
 const renderTasks = (selectedList) => {
-  // console.log(selectedList)
   document.getElementById('todo-heading').classList.add('hide')
   document.querySelector('#tasks-container').classList.remove('hide')
   document.getElementById('listName').innerHTML = '<span style="float:left;" id="back-button"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>' +
   selectedList.name + '<i style="float:right; color:gray; pointer-Events:none;" id="clear-task-button" class="fa fa-times" aria-hidden="true"></i>'
+
   // console.log(document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild)
   // document.querySelector('#tasks-container').firstElementChild.firstElementChild.firstElementChild.onclick = (event) => {
   //   reset(document.getElementById('tasks-container'))
   //   console.log('v')
   //   renderLists(lists)
   // }
+
   document.getElementById('back-button').onclick = (event) => {
     document.querySelector('#tasks-container').classList.add('hide')
     document.getElementById('todo-heading').classList.remove('hide')
@@ -171,19 +175,18 @@ const renderTasks = (selectedList) => {
   document.getElementById('clear-task-button').onclick = event => clearCompletedTask(event, selectedList)
 
   selectedList.tasks.forEach(task => {
-    // console.log('for each task')
     const divElement = document.createElement('div')
-    // divElement.appendChild(document.createTextNode(task.name))
-    // divElement.id = task.id
-    // showTaskContainer.appendChild(divElement)
+
     const input = document.createElement('input')
     input.type = 'checkbox'
     input.checked = task.completed
     divElement.appendChild(input)
+
     const span = document.createElement('span')
     span.textContent = task.name
     span.id = 'text-item'
     divElement.appendChild(span)
+
     const span1 = document.createElement('span')
     const span2 = document.createElement('span')
     const span3 = document.createElement('span')
@@ -210,6 +213,7 @@ const renderTasks = (selectedList) => {
       span1.style.pointerEvents = 'none'
       span2.style.pointerEvents = 'none'
       span3.style.pointerEvents = 'none'
+
       span1.style.color = 'grey'
       span2.style.color = 'grey'
       span3.style.color = 'grey'
@@ -222,15 +226,15 @@ const renderTasks = (selectedList) => {
         span.style.textDecoration = 'line-through'
       } else {
         span.style.textDecoration = 'none'
-        // span.style.color = 'none'
       }
+
       updateTask(selectedList.id, event.target.parentNode.id, { completed: input.checked })
     }
-    //  input.setAttribute('onclick', 'updateTask(' + selectedList.id + ',event.target.parentNode.id' + ', {completed:' + !input.checked + '})')
+
     span1.setAttribute('onclick', 'editSelectedTaskOnClick(event, ' + selectedList.id + ')')
     span2.setAttribute('onclick', 'deleteSelectedTaskOnClick(event, ' + selectedList.id + ')')
-    // span3.setAttribute('onclick', 'expandTask(event, ' + selectedList.id + ',"task")')
     span3.onclick = event => { expandTask(event, selectedList.id, task) }
+
     divElement.id = task.id
     divElement.style.padding = '5px'
     showTaskContainer.appendChild(divElement)
@@ -239,21 +243,22 @@ const renderTasks = (selectedList) => {
 
 const clearCompletedTask = (event, selectedList) => {
   // let tasks = selectedList.tasks
-  selectedList.tasks = selectedList.tasks.filter(task => !task.completed)
   // tasks = updatedTasksList
   // console.log(tasks)
-  // console.log('v')
   // event.target.parentNode.parentNode.parentNode.classList.add('hide')
   // reset(addTaskInput.nextElementSibling)
   // document.querySelector('#tasks-container').classList.add('hide')
   // reset(addTaskInput.nextElementSibling)
   // console.log(selectedList)
   // console.log(lists)
+
+  selectedList.tasks = selectedList.tasks.filter(task => !task.completed)
+  localStorage.setItem('todos', JSON.stringify(lists))
   reset(event.target.parentNode.nextElementSibling.nextElementSibling)
   renderTasks(selectedList)
 }
+
 const expandTask = (event, listId, task) => {
-  // console.log(task)
   const parentDiv = event.target.parentNode.parentNode
 
   if (parentDiv.querySelector('#task-details')) {
@@ -264,8 +269,7 @@ const expandTask = (event, listId, task) => {
   const taskDetailsContainer = document.createElement('div')
   taskDetailsContainer.id = 'task-details'
   taskDetailsContainer.name = 'taskDetails'
-  // const taskDetailContainer = document.getElementById('task-details')
-  // reset(taskDetailContainer)
+
   const span = document.createElement('span')
   span.id = 'label'
   span.textContent = 'Notes:'
@@ -280,7 +284,6 @@ const expandTask = (event, listId, task) => {
   const input = document.createElement('input')
   input.id = 'scheduling'
   input.type = 'date'
-  // console.log(task.scheduled)
   input.value = task.scheduled
   // console.log(new Date(1584856403195).getFullYear() + '-' + (0 + String(new Date(1584856403195).getMonth() + 1)) + '-' + new Date(1584856403195).getDate())
   // console.log(typeof (new Date(task.scheduled).getFullYear() + '-' + (new Date(task.scheduled).getMonth() + 1) + '-' + new Date(task.scheduled).getDate()))
@@ -288,7 +291,6 @@ const expandTask = (event, listId, task) => {
   const selectList = document.createElement('select')
   selectList.id = 'priority'
   const priorityArr = ['None', 'Low', 'Medium', 'High']
-
   for (let i = 0; i < priorityArr.length; i++) {
     const option = document.createElement('option')
     option.value = i
@@ -297,12 +299,13 @@ const expandTask = (event, listId, task) => {
   }
   selectList.value = task.priority
 
-  taskDetailsContainer.append(span)
+  taskDetailsContainer.appendChild(span)
   taskDetailsContainer.appendChild(textArea)
   taskDetailsContainer.appendChild(input)
   taskDetailsContainer.appendChild(selectList)
 
   textArea.onchange = (event) => updateTask(listId, parentDiv.id, { note: event.target.value })
+
   input.onchange = (event) => {
     if (event.target.value === '') {
       updateTask(listId, parentDiv.id, { scheduled: '9999-99-99' })
@@ -312,6 +315,7 @@ const expandTask = (event, listId, task) => {
   }
 
   selectList.onchange = (event) => updateTask(listId, parentDiv.id, { priority: event.target.value })
+
   // textArea.setAttribute('onchange', 'updateTask(' + listId + ',' + 'event.target.parentNode.parentNode.id' + ',{ note:' + event.currentTarget.value + '})')
   // textArea.oninput = function tamp (event) {
   //   console.log(event)
@@ -324,27 +328,24 @@ const expandTask = (event, listId, task) => {
 }
 
 const updateTask = (listId, taskId, taskObj) => {
-  // console.log(listId, taskId, taskObj)
-  // console.log(taskObj)
   const task = lists.filter(list => list.id === String(listId))[0].tasks.filter(task => task.id === taskId)[0]
   Object.assign(task, taskObj)
-  // console.log(lists)
-  ls.setItem('todos', JSON.stringify(lists))
+  localStorage.setItem('todos', JSON.stringify(lists))
   if (Object.keys(taskObj)[0] === 'scheduled' || Object.keys(taskObj)[0] === 'priority' || Object.keys(taskObj)[0] === 'completed') {
     updateOrderOfTasks(listId)
   }
 }
 
 const updateOrderOfTasks = listId => {
-  // console.log(listId)
   const taskList = lists.filter(list => list.id === String(listId))[0].tasks
   // console.log(taskList)
   // const nonScheduledLists = taskList.filter(task => task.scheduled === '9999-99-99')
-  taskList.sort((a, b) => a.createdAt - b.createdAt)
   // console.log(nonScheduledLists, 1)
   // const scheduledLists = taskList.filter(task => task.scheduled !== '9999-99-99')
   // // taskList = scheduledLists.concat(nonScheduledLists)
   // console.log(scheduledLists, 2)
+
+  taskList.sort((a, b) => a.createdAt - b.createdAt)
 
   taskList.sort((a, b) => {
     if (a.scheduled > b.scheduled) return 1
@@ -352,34 +353,24 @@ const updateOrderOfTasks = listId => {
     return 0
   })
 
-  // console.log(taskList)
-
   taskList.sort((a, b) => b.priority - a.priority)
-  // console.log(lists)
+
   taskList.sort((a, b) => {
     if (String(a.completed) > String(b.completed)) return 1
     if (String(b.completed) > String(a.completed)) return -1
     return 0
   })
 
-  // console.log(taskList)
-  // console.log(lists)
-  // console.log(lists, 'before')
-  // console.log(taskList)
-  // lists.filter(list => list.id === String(listId))[0].tasks = taskList
-  // console.log(lists, 'after')
   reset(addTaskInput.nextElementSibling)
-  // console.log(lists.filter(list => list.id === String(listId))[0])
-  ls.setItem('todos', JSON.stringify(lists))
+  localStorage.setItem('todos', JSON.stringify(lists))
   renderTasks(lists.filter(list => list.id === String(listId))[0])
 }
 
 const deleteTask = (listId, taskId) => {
-  // console.log(listId, taskId, value)
   const list = lists.filter(list => list.id === String(listId))[0]
   const tasksList = list.tasks.filter(task => task.id !== taskId)
   list.tasks = tasksList
-  ls.setItem('todos', JSON.stringify(lists))
+  localStorage.setItem('todos', JSON.stringify(lists))
 }
 
 const editSelectedTaskOnClick = (event, listId) => {
@@ -388,12 +379,6 @@ const editSelectedTaskOnClick = (event, listId) => {
   for (let i = 0; i < 5; i++) {
     parentDiv.childNodes[i].classList.add('hide')
   }
-  // parentDiv.childNodes[0].classList.add('hide')
-  // parentDiv.childNodes[1].classList.add('hide')
-  // parentDiv.childNodes[2].classList.add('hide')
-  // parentDiv.childNodes[3].classList.add('hide')
-  // parentDiv.childNodes[4].classList.add('hide')
-  // parentDiv.classList.add('hide')
 
   const input = document.createElement('input')
   input.type = 'text'
@@ -402,20 +387,21 @@ const editSelectedTaskOnClick = (event, listId) => {
   // parentDiv.replaceChild(input, parentDiv.childNodes[1])
   parentDiv.appendChild(input)
   input.focus()
+
   input.addEventListener('keyup', function (event) {
     if (event.keyCode === 13) {
+      if (this.value === '') {
+        input.placeholder = 'Can\'t add empty task'
+        return
+      }
+
       updateTask(listId, parentDiv.id, { name: this.value })
       // const span = document.createElement('span')
       // span.textContent = this.value
       // parentDiv.replaceChild(span, parentDiv.childNodes[1])
       parentDiv.removeChild(input)
       parentDiv.childNodes[1].textContent = this.value
-      // parentDiv.childNodes[0].classList.remove('hide')
-      // parentDiv.childNodes[1].classList.remove('hide')
-      // parentDiv.childNodes[2].classList.remove('hide')
-      // parentDiv.childNodes[3].classList.remove('hide')
-      // parentDiv.childNodes[4].classList.remove('hide')
-      // parentDiv.classList.remove('hide')
+
       for (let i = 0; i < 5; i++) {
         parentDiv.childNodes[i].classList.remove('hide')
       }
@@ -426,7 +412,6 @@ const editSelectedTaskOnClick = (event, listId) => {
 const deleteSelectedTaskOnClick = (event, listId) => {
   const parentDiv = event.target.parentNode.parentNode.parentNode
   const childDiv = event.target.parentNode.parentNode
-  // console.log(childDiv.id)
   deleteTask(listId, childDiv.id)
   parentDiv.removeChild(childDiv)
 }
@@ -443,13 +428,10 @@ addTaskInput.addEventListener('keyup', function (event) {
     // console.log(addListInput.nextSibling.innerHTML)
     reset(addTaskInput.nextElementSibling)
     updateOrderOfTasks(selectedList.id)
-
-    // renderTasks(selectedList)
   }
 })
 
 const reset = element => {
-  // console.log(element, 'vinet')
   while (element.firstChild) {
     element.removeChild(element.firstChild)
   }
