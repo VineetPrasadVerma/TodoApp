@@ -8,15 +8,15 @@ let lists = ls.getItem('todos') ? JSON.parse(ls.getItem('todos')) : []
 let selectedList = []
 
 const addNewList = listName => {
-  if (!listName) return
+  if (!listName) return false
   const newList = createList(listName)
   lists.push(newList)
   ls.setItem('todos', JSON.stringify(lists))
+  return true
 }
 
 const updateList = (id, value) => {
-  // console.log(id, value)
-  if (!value) returnconst
+  if (!value) return
   // console.log(id, value)
   const list = lists.filter(list => list.id === String(id))[0]
   list.name = value
@@ -61,8 +61,13 @@ addListInput.addEventListener('keyup', function (event) {
   searchList(event)
   if (event.keyCode === 13) {
     event.preventDefault()
-    addNewList(this.value)
+    // console.log(event.target.value)
+    if (!addNewList(this.value)) {
+      addListInput.placeholder = ' Can\'t add empty list'
+      return
+    }
     this.value = ''
+    addListInput.placeholder = ' Search | Add Lists'
     // console.log(addListInput.nextSibling.innerHTML)
     reset(addListInput.nextElementSibling)
     renderLists(lists)
@@ -131,12 +136,13 @@ const deleteSelectedListOnClick = (event) => {
 // })
 
 const addNewTask = taskName => {
-  if (!taskName) return
+  if (!taskName) return false
   // console.log(taskList)
   const newTask = createTask(taskName)
   selectedList.tasks.push(newTask)
   // console.log(lists)
   ls.setItem('todos', JSON.stringify(lists))
+  return true
 }
 
 const renderTasks = (selectedList) => {
@@ -428,11 +434,16 @@ const deleteSelectedTaskOnClick = (event, listId) => {
 addTaskInput.addEventListener('keyup', function (event) {
   if (event.keyCode === 13) {
     // console.log(event.target)
-    addNewTask(this.value)
+    if (!addNewTask(this.value)) {
+      addTaskInput.placeholder = 'Can\'t add empty task'
+      return
+    }
     this.value = ''
+    addTaskInput.placeholder = 'Add Tasks'
     // console.log(addListInput.nextSibling.innerHTML)
     reset(addTaskInput.nextElementSibling)
     updateOrderOfTasks(selectedList.id)
+
     // renderTasks(selectedList)
   }
 })
