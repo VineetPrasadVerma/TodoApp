@@ -1,7 +1,3 @@
-/* *{
-    box-sizing: border-box;
-} */
-
 #container{
     width: 360px;
     margin: 100px auto; /*Top bottom to be 0 and left and right to be auto */
@@ -13,13 +9,13 @@ body{
 
 input[type=text]{
    width: 100%;
-   outline: none;
-   box-sizing: border-box;
+   /* outline: none;
+   box-sizing: border-box; */
 }
 
-.active-list{
+/* .active-list{
     color: aqua;
-}
+} */
 
 .hide{
     display: none;

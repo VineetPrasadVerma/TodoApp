@@ -16,7 +16,7 @@ const addNewList = listName => {
 
 const updateList = (id, value) => {
   // console.log(id, value)
-  if (!value) return
+  if (!value) returnconst
   // console.log(id, value)
   const list = lists.filter(list => list.id === String(id))[0]
   list.name = value
@@ -70,7 +70,7 @@ addListInput.addEventListener('keyup', function (event) {
 })
 
 const searchList = event => {
-  const searchedList = lists.filter(list => list.name.toLowerCase().startsWith(event.target.value.toLowerCase()))
+  const searchedList = lists.filter(list => list.name.toLowerCase().includes(event.target.value.toLowerCase()))
   reset(addListInput.nextElementSibling)
   renderLists(searchedList)
 }
@@ -274,7 +274,10 @@ const expandTask = (event, listId, task) => {
   const input = document.createElement('input')
   input.id = 'scheduling'
   input.type = 'date'
+  // console.log(task.scheduled)
   input.value = task.scheduled
+  // console.log(new Date(1584856403195).getFullYear() + '-' + (0 + String(new Date(1584856403195).getMonth() + 1)) + '-' + new Date(1584856403195).getDate())
+  // console.log(typeof (new Date(task.scheduled).getFullYear() + '-' + (new Date(task.scheduled).getMonth() + 1) + '-' + new Date(task.scheduled).getDate()))
 
   const selectList = document.createElement('select')
   selectList.id = 'priority'
@@ -294,7 +297,13 @@ const expandTask = (event, listId, task) => {
   taskDetailsContainer.appendChild(selectList)
 
   textArea.onchange = (event) => updateTask(listId, parentDiv.id, { note: event.target.value })
-  input.onchange = (event) => updateTask(listId, parentDiv.id, { scheduled: event.target.value })
+  input.onchange = (event) => {
+    if (event.target.value === '') {
+      updateTask(listId, parentDiv.id, { scheduled: '9999-99-99' })
+    } else {
+      updateTask(listId, parentDiv.id, { scheduled: event.target.value })
+    }
+  }
 
   selectList.onchange = (event) => updateTask(listId, parentDiv.id, { priority: event.target.value })
   // textArea.setAttribute('onchange', 'updateTask(' + listId + ',' + 'event.target.parentNode.parentNode.id' + ',{ note:' + event.currentTarget.value + '})')
@@ -321,14 +330,23 @@ const updateTask = (listId, taskId, taskObj) => {
 }
 
 const updateOrderOfTasks = listId => {
-  console.log(listId)
+  // console.log(listId)
   const taskList = lists.filter(list => list.id === String(listId))[0].tasks
-  console.log(taskList)
+  // console.log(taskList)
+  // const nonScheduledLists = taskList.filter(task => task.scheduled === '9999-99-99')
+  taskList.sort((a, b) => a.createdAt - b.createdAt)
+  // console.log(nonScheduledLists, 1)
+  // const scheduledLists = taskList.filter(task => task.scheduled !== '9999-99-99')
+  // // taskList = scheduledLists.concat(nonScheduledLists)
+  // console.log(scheduledLists, 2)
+
   taskList.sort((a, b) => {
     if (a.scheduled > b.scheduled) return 1
     if (b.scheduled > a.scheduled) return -1
     return 0
   })
+
+  // console.log(taskList)
 
   taskList.sort((a, b) => b.priority - a.priority)
   // console.log(lists)
@@ -338,8 +356,15 @@ const updateOrderOfTasks = listId => {
     return 0
   })
 
+  // console.log(taskList)
+  // console.log(lists)
+  // console.log(lists, 'before')
+  // console.log(taskList)
+  // lists.filter(list => list.id === String(listId))[0].tasks = taskList
+  // console.log(lists, 'after')
   reset(addTaskInput.nextElementSibling)
-  console.log(lists.filter(list => list.id === String(listId))[0])
+  // console.log(lists.filter(list => list.id === String(listId))[0])
+  ls.setItem('todos', JSON.stringify(lists))
   renderTasks(lists.filter(list => list.id === String(listId))[0])
 }
 
@@ -424,7 +449,7 @@ function createList (listName) {
 }
 
 function createTask (taskName) {
-  return { id: Date.now().toString(), name: taskName, scheduled: '9999-99-99', completed: false, priority: 0, note: '' }
+  return { id: Date.now().toString(), name: taskName, createdAt: Date.now(), scheduled: '9999-99-99', completed: false, priority: 0, note: '' }
 }
 
 const load = () => {
