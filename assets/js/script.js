@@ -208,26 +208,16 @@ const renderTasks = (selectedList) => {
       //   span`${i}`.style.pointerEvents = 'none'
       //   span`${i}`.style.color = 'grey'
       // }
-      document.getElementById('clear-task-button').style.pointerEvents = ''
-      document.getElementById('clear-task-button').style.color = ''
-      span1.style.pointerEvents = 'none'
-      span2.style.pointerEvents = 'none'
-      span3.style.pointerEvents = 'none'
+      document.getElementById('clear-task-button').style.pointerEvents = 'auto'
+      document.getElementById('clear-task-button').style.color = 'black'
 
-      span1.style.color = 'grey'
-      span2.style.color = 'grey'
-      span3.style.color = 'grey'
-      span.style.color = 'grey'
+      span.classList.add('completed-task')
+      span1.classList.add('completed-task')
+      span2.classList.add('completed-task')
+      span3.classList.add('completed-task')
     }
 
     input.onclick = (event) => {
-      if (input.checked) {
-        span.style.color = 'grey'
-        span.style.textDecoration = 'line-through'
-      } else {
-        span.style.textDecoration = 'none'
-      }
-
       updateTask(selectedList.id, event.target.parentNode.id, { completed: input.checked })
     }
 
